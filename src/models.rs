@@ -48,11 +48,13 @@ pub struct CardDetails {
 
 impl List {
     pub async fn validate(&self, validators: Vec<Box<dyn Validator>>) -> bool {
+        let mut is_valid =  true;
+        println!("Validating list {}...", self.name);
         for validator in validators {
             if !validator.check(self).await {
-                return false;
+                is_valid = false;
             }
         }
-        true
+        is_valid
     }
 }
