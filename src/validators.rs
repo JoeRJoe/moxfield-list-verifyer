@@ -12,6 +12,8 @@ pub struct MassLandDenialValidator {}
 pub struct NonLandTutorValidator {}
 pub struct CommanderTutorValidator {}
 pub struct RepeatableTutorValidator {}
+pub struct MultipleTutorValidator {}
+pub struct ComboValidator {}
 
 impl Validator for MassLandDenialValidator {
     fn check<'a>(
@@ -111,6 +113,25 @@ impl Validator for CommanderTutorValidator {
 }
 
 impl Validator for RepeatableTutorValidator {
+    fn check<'a>(
+        &'a self,
+        list: &'a List,
+    ) -> Pin<Box<dyn std::future::Future<Output = bool> + Send + 'a>> {
+        todo!()
+    }
+
+}
+
+impl Validator for MultipleTutorValidator {
+    fn check<'a>(
+        &'a self,
+        list: &'a List,
+    ) -> Pin<Box<dyn std::future::Future<Output = bool> + Send + 'a>> {
+        todo!()
+    }
+}
+
+impl Validator for ComboValidator {
     fn check<'a>(
         &'a self,
         list: &'a List,
