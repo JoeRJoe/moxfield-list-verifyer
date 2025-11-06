@@ -10,6 +10,8 @@ pub trait Validator: Send + Sync {
 
 pub struct MassLandDenialValidator {}
 pub struct NonLandTutorValidator {}
+pub struct CommanderTutorValidator {}
+pub struct RepeatableTutorValidator {}
 
 impl Validator for MassLandDenialValidator {
     fn check<'a>(
@@ -28,7 +30,7 @@ impl Validator for MassLandDenialValidator {
                 .chain(list.boards.commanders.cards.values())
             {
                 let card_name = &card.card.name;
-                let response = client.get(format!("https://api.scryfall.com/cards/search?q=f:edh+otag:mass-land-denial+!'{}'", card_name.replace(" ", "+")))
+                let response = client.get(format!("https://api.scryfall.com/cards/search?q=f:edh+otag:mass-land-denial+!\"{}\"", card_name.replace(" ", "+")))
                     .header("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0")
                     .header("Accept", "application/json")
                     .send()
@@ -59,14 +61,9 @@ impl Validator for NonLandTutorValidator {
         Box::pin(async move {
             let client = reqwest::Client::new();
             let mut tutor_count = 0;
-            for card in list
-                .boards
-                .mainboard
-                .cards
-                .values()
-            {
+            for card in list.boards.mainboard.cards.values() {
                 let card_name = &card.card.name;
-                let response = client.get(format!("https://api.scryfall.com/cards/search?q=f:edh+otag:tutor+-otag:tutor-land+!'{}'", card_name.replace(" ", "+")))
+                let response = client.get(format!("https://api.scryfall.com/cards/search?q=f:edh+otag:tutor+-otag:tutor-land+!\"{}\"", card_name.replace(" ", "+")))
                     .header("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0")
                     .header("Accept", "application/json")
                     .send()
@@ -75,14 +72,49 @@ impl Validator for NonLandTutorValidator {
                 if let Ok(value) = response
                     && value.status().is_success()
                 {
-                    println!(
-                        "Card {} is a non-land tutor.",
-                        card_name
-                    );
+                    println!("Card {} is a non-land tutor.", card_name);
                     tutor_count += 1;
                 }
             }
             tutor_count <= 3
         })
+    }
+}
+
+impl Validator for CommanderTutorValidator {
+    fn check<'a>(
+        &'a self,
+        list: &'a List,
+    ) -> Pin<Box<dyn std::future::Future<Output = bool> + Send + 'a>> {
+        println!("Checking for tutors in command zone...");
+        Box::pin(async move {
+            let client = reqwest::Client::new();
+            let mut commander_tutor_found = false;
+            for card in list.boards.commanders.cards.values() {
+                let card_name = &card.card.name;
+                let response = client.get(format!("https://api.scryfall.com/cards/search?q=f:edh+otag:tutor+-otag:tutor-land+!\"{}\"", card_name.replace(" ", "+")))
+                    .header("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0")
+                    .header("Accept", "application/json")
+                    .send()
+                    .await;
+
+                if let Ok(value) = response
+                    && value.status().is_success()
+                {
+                    println!("Commander {} is a tutor, which is not allowed.", card_name);
+                    commander_tutor_found = true;
+                }
+            }
+            !commander_tutor_found
+        })
+    }
+}
+
+impl Validator for RepeatableTutorValidator {
+    fn check<'a>(
+        &'a self,
+        list: &'a List,
+    ) -> Pin<Box<dyn std::future::Future<Output = bool> + Send + 'a>> {
+        todo!()
     }
 }

@@ -1,6 +1,6 @@
 use rocket::serde::json::Json;
 
-use crate::{models::List, validators::{MassLandDenialValidator, NonLandTutorValidator}};
+use crate::{models::List, validators::{CommanderTutorValidator, MassLandDenialValidator, NonLandTutorValidator}};
 
 #[get("/validate/<id>")]
 pub async fn validate(id: &str) -> Json<bool> {
@@ -21,6 +21,7 @@ pub async fn validate(id: &str) -> Json<bool> {
             .validate(vec![
                 Box::new(MassLandDenialValidator {}),
                 Box::new(NonLandTutorValidator {}),
+                Box::new(CommanderTutorValidator {}),
             ])
             .await,
     )
