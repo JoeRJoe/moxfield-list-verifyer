@@ -7,5 +7,5 @@ extern crate rocket;
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![routes::validate])
+    rocket::build().mount("/", routes![routes::validate, routes::validate_batch])
 }

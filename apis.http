@@ -1,14 +1,12 @@
-GET http://127.0.0.1:8000/validate/TAU7cmFo-0-QVAnsUTk-6w
+GET http://127.0.0.1:8000/validate/IPDE0JQEyEy_jsF9HmkSaw
 
 ###
 
-POST https://backend.commanderspellbook.com/find-my-combos
+POST http://127.0.0.1:8000/validate/batch
 Content-Type: application/json
 
-{
-    "cards": [
-        "Sol Ring",
-        "Mana Crypt",
-        "Demonic Tutor"
-    ]
-}
+[
+  "WAdsqd2QHkyTAkAXZ1Am9A",
+  "gmbcWFZsEUWwSld3_frKwA",
+  "IPDE0JQEyEy_jsF9HmkSaw"
+]
