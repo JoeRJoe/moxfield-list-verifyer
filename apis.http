@@ -1,4 +1,4 @@
-GET http://127.0.0.1:8000/validate/IPDE0JQEyEy_jsF9HmkSaw
+GET http://127.0.0.1:8000/validate/PaZBFontw06B1pafkoXtWA
 
 ###
 
@@ -8,5 +8,38 @@ Content-Type: application/json
 [
   "WAdsqd2QHkyTAkAXZ1Am9A",
   "gmbcWFZsEUWwSld3_frKwA",
-  "IPDE0JQEyEy_jsF9HmkSaw"
+  "qYHnYMrml06RQmfw3emlTQ",
+  "Afpo_MS5qk-tcRMvTpOSYg",
+  "e-NAmGSQ70iWX74tmZSOQw",
+  "CoKl-lpvmUSEF0LdNi-d6g",
+  "YM55Pr2dJE2SeZcduKWFhg",
+  "4_Wu-paVGE-n598Nq9AV-g",
+  "NOfRhwPYHU-XMHVVKMfuGQ"
 ]
+
+###
+
+GET https://api2.moxfield.com/v2/decks/search?pageNumber=1&pageSize=64&sortType=updated&sortDirection=descending&authorUserNames=GoblinPisa
+User-Agent: JoeRJoe; MoxKey 6e9f5aa56c63
+
+###
+
+POST https://backend.commanderspellbook.com/find-my-combos
+Content-Type: application/json
+
+{
+  "main" : [
+    {
+      "card" : "Urza, Lord High Artificer",
+      "quantity" : 1
+    },
+    {
+      "card" : "Thopter Foundry",
+      "quantity" : 1
+    },
+    {
+      "card" : "Sword of the Meek",
+      "quantity" : 1
+    },
+  ]
+}

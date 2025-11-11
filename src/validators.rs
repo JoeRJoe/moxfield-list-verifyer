@@ -1,4 +1,4 @@
-use crate::models::{CardList, CardListUnit, ComboListRequest, List, Report};
+use crate::models::{CardList, CardListUnit, ComboListRequest, List, Report, ScryfallQuery};
 use std::pin::Pin;
 
 pub trait Validator: Send + Sync {
@@ -12,8 +12,6 @@ pub trait Validator: Send + Sync {
 pub struct MassLandDenialValidator;
 pub struct NonLandTutorValidator;
 pub struct CommanderTutorValidator;
-pub struct RepeatableTutorValidator;
-pub struct MultipleTutorValidator;
 pub struct TwoCardComboValidator;
 pub struct GamechangerValidator;
 pub struct InfiniteTurnsValidator;
@@ -44,14 +42,14 @@ impl Validator for MassLandDenialValidator {
 
                 if let Ok(value) = response
                     && value.status().is_success()
-                    && !card.card.type_line.contains("Planeswalker")
                 {
                     println!(
                         "Card {} is banned due to mass land denial policy.",
                         card_name
                     );
                     mld_found = true;
-                    report.mass_land_denial_cards.push(card_name.to_string());
+                    let oracle_text = value.json::<ScryfallQuery>().await.unwrap().data.first().unwrap().oracle_text.clone();
+                    report.mass_land_denial_cards.push((card_name.to_string(), oracle_text));
                 }
             }
             !mld_found
@@ -82,7 +80,8 @@ impl Validator for NonLandTutorValidator {
                 {
                     println!("Card {} is a non-land tutor.", card_name);
                     tutor_count += 1;
-                    report.non_land_tutors.push(card_name.to_string());
+                    let oracle_text = value.json::<ScryfallQuery>().await.unwrap().data.first().unwrap().oracle_text.clone();
+                    report.non_land_tutors.push((card_name.to_string(), oracle_text));
                 }
             }
             println!("Total non-land tutors found: {}", tutor_count);
@@ -122,26 +121,6 @@ impl Validator for CommanderTutorValidator {
     }
 }
 
-impl Validator for RepeatableTutorValidator {
-    fn check<'a>(
-        &'a self,
-        list: &'a List,
-        report: &'a mut Report,
-    ) -> Pin<Box<dyn std::future::Future<Output = bool> + Send + 'a>> {
-        todo!()
-    }
-}
-
-impl Validator for MultipleTutorValidator {
-    fn check<'a>(
-        &'a self,
-        list: &'a List,
-        report: &'a mut Report,
-    ) -> Pin<Box<dyn std::future::Future<Output = bool> + Send + 'a>> {
-        todo!()
-    }
-}
-
 impl Validator for TwoCardComboValidator {
     fn check<'a>(
         &'a self,
@@ -166,8 +145,9 @@ impl Validator for TwoCardComboValidator {
                 .collect();
 
             let card_list = CardList { main: cards };
-            
-            let combo_list = client.post("https://backend.commanderspellbook.com/find-my-combos")
+
+            let combo_list = client
+                .post("https://backend.commanderspellbook.com/find-my-combos")
                 .header("Content-Type", "application/json")
                 .json(&card_list)
                 .send()
@@ -176,6 +156,10 @@ impl Validator for TwoCardComboValidator {
                 .json::<ComboListRequest>()
                 .await
                 .unwrap();
+
+            if report.combos.is_empty() {
+                report.combos = combo_list.results.get_combos();
+            }
 
             let two_card_combos = combo_list.results.check_two_card_combos();
             let has_two_card_combos = !two_card_combos.is_empty();
@@ -246,8 +230,9 @@ impl Validator for InfiniteTurnsValidator {
                 .collect();
 
             let card_list = CardList { main: cards };
-            
-            let combo_list = client.post("https://backend.commanderspellbook.com/find-my-combos")
+
+            let combo_list = client
+                .post("https://backend.commanderspellbook.com/find-my-combos")
                 .header("Content-Type", "application/json")
                 .json(&card_list)
                 .send()
@@ -256,6 +241,10 @@ impl Validator for InfiniteTurnsValidator {
                 .json::<ComboListRequest>()
                 .await
                 .unwrap();
+
+            if report.combos.is_empty() {
+                report.combos = combo_list.results.get_combos();
+            }
 
             let infinite_turn_combos = combo_list.results.check_infinite_turns_combos();
             let has_infinite_turns = !infinite_turn_combos.is_empty();

@@ -10,6 +10,7 @@ use crate::{
 #[get("/validate/<id>")]
 pub async fn validate(id: &str) -> Json<Report> {
     let client = reqwest::Client::new();
+
     let response: List = client
         .get("https://api2.moxfield.com/v3/decks/all/".to_string() + id)
         .header("User-Agent", "MoxKey; JoeRJoe 6e9f5aa56c63")
@@ -35,10 +36,10 @@ pub async fn validate(id: &str) -> Json<Report> {
     )
 }
 
-#[post("/validate/batch", data = "<lists>")]
-pub async fn validate_batch(lists: Json<Vec<&str>>) -> Json<Vec<Report>> {
+#[post("/validate/batch", data = "<id_lists>")]
+pub async fn validate_batch(id_lists: Json<Vec<&str>>) -> Json<Vec<Report>> {
     let mut reports = Vec::new();
-    for id in lists.iter() {
+    for id in id_lists.iter() {
         let client = reqwest::Client::new();
         let response: List = client
             .get("https://api2.moxfield.com/v3/decks/all/".to_string() + id)
@@ -58,6 +59,8 @@ pub async fn validate_batch(lists: Json<Vec<&str>>) -> Json<Vec<Report>> {
                     Box::new(NonLandTutorValidator),
                     Box::new(CommanderTutorValidator),
                     Box::new(GamechangerValidator),
+                    Box::new(InfiniteTurnsValidator),
+                    Box::new(TwoCardComboValidator),
                 ])
                 .await,
         );

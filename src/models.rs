@@ -8,14 +8,13 @@ pub struct Report {
     pub is_valid: bool,
     pub name: String,
     pub author: String,
-    pub non_land_tutors: Vec<String>,
-    pub mass_land_denial_cards: Vec<String>,
+    pub non_land_tutors: Vec<(String, String)>,
+    pub mass_land_denial_cards: Vec<(String, String)>,
     pub commander_tutors: Vec<String>,
-    pub repeatable_tutors: Vec<String>,
-    pub multiple_tutors: Vec<String>,
-    pub two_card_combos: Vec<Vec<String>>,
+    pub two_card_combos: Vec<(Vec<String>, String)>,
     pub gamechangers: Vec<String>,
     pub infinite_turns_combos: Vec<Vec<String>>,
+    pub combos: Vec<(Vec<String>, String)>,
 }
 
 impl Report {
@@ -27,11 +26,10 @@ impl Report {
             non_land_tutors: Vec::new(),
             mass_land_denial_cards: Vec::new(),
             commander_tutors: Vec::new(),
-            repeatable_tutors: Vec::new(),
-            multiple_tutors: Vec::new(),
             two_card_combos: Vec::new(),
             gamechangers: Vec::new(),
             infinite_turns_combos: Vec::new(),
+            combos: Vec::new(),
         }
     }
 }
@@ -105,6 +103,7 @@ pub struct ComboListIncluded {
     pub id: String,
     pub uses: Vec<Ingredient>,
     pub produces: Vec<ComboEffect>,
+    pub description: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -128,6 +127,19 @@ pub struct Effect {
     pub name: String,
     pub status: String,
     pub uncountable: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ScryfallQuery {
+    pub data: Vec<ScryfallCard>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ScryfallCard {
+    pub name: String,
+    pub type_line: String,
+    pub oracle_text: String,
+    pub game_changer: bool,
 }
 
 impl List {
@@ -154,7 +166,11 @@ impl ComboList {
         let mut infinite_turns_combos: Vec<Vec<String>> = Vec::new();
 
         for included in self.included.iter() {
-            if included.produces.iter().any(|effect| effect.feature.name.contains("turns")) {
+            if included
+                .produces
+                .iter()
+                .any(|effect| effect.feature.name.contains("turns"))
+            {
                 infinite_turns_combos.push(
                     included
                         .uses
@@ -167,20 +183,38 @@ impl ComboList {
         infinite_turns_combos
     }
 
-    pub fn check_two_card_combos(&self) -> Vec<Vec<String>> {
-        let mut two_cards_combos: Vec<Vec<String>> = Vec::new();
+    pub fn check_two_card_combos(&self) -> Vec<(Vec<String>, String)> {
+        let mut two_cards_combos: Vec<(Vec<String>, String)> = Vec::new();
 
         for included in self.included.iter() {
             if included.uses.len() <= 2 {
-                two_cards_combos.push(
+                two_cards_combos.push((
                     included
                         .uses
                         .iter()
                         .map(|ingredient| ingredient.card.name.clone())
                         .collect(),
-                );
+                    included.description.clone(),
+                ));
             }
         }
         two_cards_combos
+    }
+
+    pub fn get_combos(&self) -> Vec<(Vec<String>, String)> {
+        let mut combos: Vec<(Vec<String>, String)> = Vec::new();
+
+        for included in self.included.iter() {
+            combos.push((
+                included
+                    .uses
+                    .iter()
+                    .map(|ingredient| ingredient.card.name.clone())
+                    .collect(),
+                    included.description.clone(),
+            ));
+        }
+        println!("Combos found: {}", combos.len());
+        combos
     }
 }
