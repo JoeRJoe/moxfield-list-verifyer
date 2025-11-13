@@ -74,7 +74,6 @@ pub struct CardDetails {
     pub id: String,
     pub name: String,
     pub legalities: HashMap<String, String>,
-    pub type_line: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -137,7 +136,6 @@ pub struct ScryfallQuery {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ScryfallCard {
     pub name: String,
-    pub type_line: String,
     pub oracle_text: String,
     pub game_changer: bool,
 }
